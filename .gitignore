@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# PyCharm project files
+.idea/
+
+# Environment variables
+*.env
+
+# Pytest cache
+.pytest_cache/
+
+# MyPy, coverage, etc.
+.mypy_cache/
+coverage.*
+htmlcov/
+
+# SQLite and other local DBs
+*.sqlite3
+*.db
+
+# Logs
+*.log
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# FastAPI-related auto-generated files (if any)
+*.pid
