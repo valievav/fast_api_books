@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
 from typing import List
-from .schemas import Book, BookUpdateModel
+
+from fastapi import APIRouter, HTTPException, status
+
 from .data import books
-from datetime import datetime
+from .schemas import Book, BookUpdateModel
 
 book_router = APIRouter()
 
