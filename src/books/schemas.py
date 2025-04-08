@@ -8,7 +8,6 @@ class Book(BaseModel):
     publisher: str
     page_count: int
     language: str
-    entry_date: str
 
 
 class BookUpdateModel(BaseModel):

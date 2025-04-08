@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-from .model import Book, BookUpdateModel
+from .schemas import Book, BookUpdateModel
 from .data import books
 from datetime import datetime
 
@@ -37,7 +37,6 @@ async def update_book(book_id: int, update_data: BookUpdateModel):
             book['publisher'] = update_data.publisher
             book['page_count'] = update_data.page_count
             book['language'] = update_data.language
-            book['entry_date'] = datetime.today().date().isoformat()
             return book
 
     return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Book not found')

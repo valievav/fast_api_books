@@ -6,7 +6,6 @@ books = [
         "publisher": "Corgi",
         "page_count": 287,
         "language": "English",
-        "entry_date": "2025-04-07",
     },
     {
         "id": 2,
@@ -15,6 +14,5 @@ books = [
         "publisher": "O'Reilly Media",
         "page_count": 1234,
         "language": "English",
-        "entry_date": "2025-04-07",
     }
 ]
