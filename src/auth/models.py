@@ -11,12 +11,12 @@ class User(SQLModel, table=True):
                                             nullable=False,
                                             primary_key=True,
                                             default=uuid.uuid4))
-    title: str
     username: str
     email: str
     first_name: str
     last_name: str
     is_verified: bool = Field(default=False)
+    password_hash: str = Field(exclude=True)  # to hide field from response
     create_date: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
     update_date: datetime = Field(sa_column=Column(pg.TIMESTAMP, default=datetime.now))
 
