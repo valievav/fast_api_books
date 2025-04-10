@@ -1,10 +1,14 @@
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
+from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
-from .schemas import User, UserCreateModel
+from .schemas import User, UserCreateModel, UserLoginModel
 from .service import UserService
+from .utils import create_access_token, verify_password, REFRESH_TOKEN_EXPIRY
 
 auth_router = APIRouter()
 user_service = UserService()
@@ -20,3 +24,36 @@ async def create_user_account(user_data: UserCreateModel, session: AsyncSession 
     new_user = await user_service.create_user(user_data, session)
     return new_user
 
+
+@auth_router.post('/login')
+async def login_users(user_data: UserLoginModel, session: AsyncSession = Depends(get_session)):
+    email = user_data.email
+    password = user_data.password
+    user = await user_service.get_user(email, session)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid email or password')
+
+    password_valid = verify_password(password, user.password_hash)
+    if not password_valid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid email or password')
+
+    data = {'email': email, 'user_uid': str(user.uid)}
+    access_token = create_access_token(
+        user_data=data
+    )
+    refresh_token = create_access_token(
+        user_data=data,
+        refresh=True,
+        expiry=timedelta(days=REFRESH_TOKEN_EXPIRY),
+    )
+    return JSONResponse(
+        content={
+            'message': 'Login successful',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'user': {
+                'email': user.email,
+                'uid': str(user.uid)
+            }
+        }
+    )
