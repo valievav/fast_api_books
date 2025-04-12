@@ -6,7 +6,8 @@ from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
-from .dependencies import RefreshTokenBearer
+from src.db.redis import add_jti_to_blocklist
+from .dependencies import RefreshTokenBearer, AccessTokenBearer
 from .schemas import User, UserCreateModel, UserLoginModel
 from .service import UserService
 from .utils import create_access_token, verify_password, REFRESH_TOKEN_EXPIRY
@@ -63,7 +64,7 @@ async def login_users(user_data: UserLoginModel, session: AsyncSession = Depends
 @auth_router.get('/refresh_access_token')
 async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer())):
     """
-    Get access token based on valid refresh token
+    Get new access token based on valid refresh token
     """
     expiry_ts = token_details['exp']
     if datetime.fromtimestamp(expiry_ts) < datetime.now():
@@ -72,4 +73,16 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
     new_access_token = create_access_token(user_data=token_details['user'])
     return JSONResponse(
         content={'access_token': new_access_token}
+    )
+
+
+@auth_router.post('/logout')
+async def revoke_token(token_data: dict = Depends(AccessTokenBearer())):
+    jti = token_data['jti']
+    await add_jti_to_blocklist(jti)
+    return JSONResponse(
+        content={
+            'message': 'Logged out successfully'
+        },
+        status_code=status.HTTP_200_OK
     )
