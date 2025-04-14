@@ -19,6 +19,9 @@ async def get_all_books(
         session: AsyncSession = Depends(get_session),
         user_cred = Depends(access_token_bearer)
 ):
+    """
+    Return all books from db
+    """
     books = await book_service.get_all_books(session)
     return books
 
@@ -29,6 +32,9 @@ async def create_book(
         session: AsyncSession = Depends(get_session),
         user_cred = Depends(access_token_bearer)
 ):
+    """
+    Create new book based on provided data
+    """
     new_book = await book_service.create_book(book_data, session)
     return new_book
 
@@ -39,6 +45,9 @@ async def get_book(
         session: AsyncSession = Depends(get_session),
         user_cred = Depends(access_token_bearer)
 ):
+    """
+    Return book based on book uid
+    """
     book = await book_service.get_book(book_uid, session)
     if book:
         return book
@@ -53,6 +62,9 @@ async def update_book(
         session: AsyncSession = Depends(get_session),
         user_cred = Depends(access_token_bearer)
 ):
+    """
+    Update book with new data
+    """
     updated_book = await book_service.update_book(book_uid, update_data, session)
     if updated_book:
         return updated_book
@@ -66,6 +78,9 @@ async def delete_book(
         session: AsyncSession = Depends(get_session),
         user_cred = Depends(access_token_bearer)
 ):
+    """
+    Delete book based on book uid
+    """
     result = await book_service.delete_book(book_uid, session)
     if result:
         return {}

@@ -7,14 +7,14 @@ from .utils import generate_password_hash
 
 
 class UserService:
-    async def get_user(self, email: str, session: AsyncSession):
+    async def get_user_by_email(self, email: str, session: AsyncSession):
         statement = select(User).where(User.email == email)
         result = await session.exec(statement)
         user = result.first()
         return user
 
     async def user_exists(self, email: str, session: AsyncSession):
-        user = await self.get_user(email, session)
+        user = await self.get_user_by_email(email, session)
         return bool(user)
 
     async def create_user(self, user_data: UserCreateModel, session: AsyncSession):

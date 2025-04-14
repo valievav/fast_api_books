@@ -16,7 +16,7 @@ To run project locally:
 2. **Setup .env file** - update `.env` file with your own paths and parameters
 3. **Apply migration files to db** - run `alembic upgrade head`
 4. **Run server** - run `fastapi dev src/`
-5. **Start redis container** - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or
+5. **Start redis container** - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
 6. **Use API** - make API call to any endpoint via Postman OR Swagger UI
 
 
