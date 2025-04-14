@@ -7,17 +7,21 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
 from src.db.redis import add_jti_to_blocklist
-from .dependencies import RefreshTokenBearer, AccessTokenBearer, get_current_user
+from .dependencies import RefreshTokenBearer, AccessTokenBearer, get_current_user, RoleChecker
 from .schemas import User, UserCreateModel, UserLoginModel
 from .service import UserService
 from .utils import create_access_token, verify_password, REFRESH_TOKEN_EXPIRY
 
 auth_router = APIRouter()
 user_service = UserService()
+role_checker = RoleChecker(['admin', 'user'])
 
 
-@auth_router.post('/signup', response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_user_account(user_data: UserCreateModel, session: AsyncSession = Depends(get_session)):
+@auth_router.post('/signup',
+                  response_model=User,
+                  status_code=status.HTTP_201_CREATED)
+async def create_user_account(user_data: UserCreateModel,
+                              session: AsyncSession = Depends(get_session)):
     """
     Create new user based on provided data
     """
@@ -31,7 +35,8 @@ async def create_user_account(user_data: UserCreateModel, session: AsyncSession 
 
 
 @auth_router.post('/login')
-async def login_users(user_data: UserLoginModel, session: AsyncSession = Depends(get_session)):
+async def login_users(user_data: UserLoginModel,
+                      session: AsyncSession = Depends(get_session)):
     """
     Login existing user (return access and refresh token)
     """
@@ -45,7 +50,11 @@ async def login_users(user_data: UserLoginModel, session: AsyncSession = Depends
     if not password_valid:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid email or password')
 
-    data = {'email': email, 'user_uid': str(user.uid)}
+    data = {
+        'email': email,
+        'user_uid': str(user.uid),
+        'role': user.role,
+    }
     access_token = create_access_token(
         user_data=data
     )
@@ -82,7 +91,8 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
     )
 
 
-@auth_router.get('/me')
+@auth_router.get('/me',
+                 dependencies=[Depends(role_checker)])
 async def get_current_user(user = Depends(get_current_user)):
     """
     Get currently logged-in user details
