@@ -76,7 +76,7 @@ async def login_users(user_data: UserLoginModel,
     )
 
 
-@auth_router.get('/refresh_access_token')
+@auth_router.post('/refresh_access_token')
 async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer())):
     """
     Get new access token based on valid refresh token
@@ -92,6 +92,7 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
 
 
 @auth_router.get('/me',
+                 response_model=User,
                  dependencies=[Depends(role_checker)])
 async def get_current_user(user = Depends(get_current_user)):
     """

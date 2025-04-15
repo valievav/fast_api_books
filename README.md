@@ -45,7 +45,7 @@ Example of data used for API call to create book:
 USER API calls:
 * POST http://127.0.0.1:8000/api/v1/auth/signup
 * POST http://127.0.0.1:8000/api/v1/auth/login
-* GET http://127.0.0.1:8000/api/v1/auth/refresh_access_token
+* POST http://127.0.0.1:8000/api/v1/auth/refresh_access_token
 
 Example of data used for API call to create book:
 

@@ -28,18 +28,34 @@ async def get_all_books(
     return books
 
 
+@book_router.get('/{user_uid}',
+                 response_model=List[Book],
+                 dependencies=[Depends(access_token_bearer), Depends(role_checker)])
+async def get_all_books_created_by_user(
+        user_uid: str,
+        session: AsyncSession = Depends(get_session),
+):
+    """
+    Return all books from db that are created by specific user
+    """
+    books = await book_service.get_user_created_books(user_uid, session)
+    return books
+
+
 @book_router.post('/',
                   response_model=Book,
                   status_code= status.HTTP_201_CREATED,
-                  dependencies=[Depends(access_token_bearer), Depends(role_checker)])
+                  dependencies=[Depends(role_checker)])
 async def create_book(
         book_data: BookCreateModel,
         session: AsyncSession = Depends(get_session),
+        token_details: dict = Depends(access_token_bearer),
 ):
     """
     Create new book based on provided data
     """
-    new_book = await book_service.create_book(book_data, session)
+    user_uid = token_details['user']['user_uid']
+    new_book = await book_service.create_book(book_data, user_uid, session)
     return new_book
 
 
