@@ -17,6 +17,9 @@ class User(BaseModel):
     password_hash: str = Field(exclude=True)  # field will be hidden, not be serialized
     create_date: datetime
     update_date: datetime
+
+
+class UserBooks(User):
     books: List[Book]  # return list of books created by user
 
 
