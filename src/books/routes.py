@@ -28,7 +28,7 @@ async def get_all_books(
     return books
 
 
-@book_router.get('/{user_uid}',
+@book_router.get('/user/{user_uid}',
                  response_model=List[Book],
                  dependencies=[Depends(access_token_bearer), Depends(role_checker)])
 async def get_all_books_created_by_user(
