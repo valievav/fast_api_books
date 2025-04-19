@@ -1,12 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from fastapi.params import Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.auth.dependencies import AccessTokenBearer, RoleChecker
 from src.books.service import BookService
 from src.db.main import get_session
+from src.errors import BookNotFoundException
 from .schemas import Book, BookDetailModel, BookUpdateModel, BookCreateModel
 
 book_router = APIRouter()
@@ -73,7 +74,7 @@ async def get_book(
     if book:
         return book
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Book not found')
+    raise BookNotFoundException()
 
 
 @book_router.patch('/{book_uid}',
@@ -90,7 +91,7 @@ async def update_book(
     if updated_book:
         return updated_book
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Book not found')
+    raise BookNotFoundException()
 
 
 @book_router.delete('/{book_uid}',
@@ -107,4 +108,4 @@ async def delete_book(
     if result:
         return {}
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Book not found')
+    raise BookNotFoundException()

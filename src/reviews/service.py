@@ -1,12 +1,10 @@
-from http.client import HTTPException
-
-from fastapi import HTTPException, status
 from sqlmodel import select, desc
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.auth.service import UserService
 from src.books.service import BookService
 from src.db.models import Review
+from src.errors import BookNotFoundException, UserNotFoundException
 from .schemas import ReviewCreateModel
 
 book_service = BookService()
@@ -36,15 +34,9 @@ class ReviewService:
         user = await user_service.get_user_by_email(user_email, session)
 
         if not book:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='Book not found'
-            )
+            raise BookNotFoundException()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='User not found'
-            )
+            raise UserNotFoundException()
 
         review_data_dict = review_data.model_dump()
         review = Review(**review_data_dict)

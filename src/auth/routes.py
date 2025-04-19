@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
 from src.db.redis import add_jti_to_blocklist
+from src.errors import UserAlreadyExistsException, InvalidCredentialsException, InvalidTokenException
 from .dependencies import RefreshTokenBearer, AccessTokenBearer, get_current_user, RoleChecker
 from .schemas import User, UserBooks, UserCreateModel, UserLoginModel
 from .service import UserService
@@ -28,7 +28,7 @@ async def create_user_account(user_data: UserCreateModel,
     email = user_data.email
     user_exists = await user_service.user_exists(email, session)
     if user_exists:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='User already exists')
+        raise UserAlreadyExistsException()
 
     new_user = await user_service.create_user(user_data, session)
     return new_user
@@ -44,11 +44,11 @@ async def login_users(user_data: UserLoginModel,
     password = user_data.password
     user = await user_service.get_user_by_email(email, session)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid email or password')
+        raise InvalidCredentialsException()
 
     password_valid = verify_password(password, user.password_hash)
     if not password_valid:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Invalid email or password')
+        raise InvalidCredentialsException()
 
     data = {
         'email': email,
@@ -83,7 +83,7 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
     """
     expiry_ts = token_details['exp']
     if datetime.fromtimestamp(expiry_ts) < datetime.now():
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Invalid or expired refresh token')
+        raise InvalidTokenException()
 
     new_access_token = create_access_token(user_data=token_details['user'])
     return JSONResponse(
