@@ -27,7 +27,7 @@ To create and apply migrations:
 ___
 _Example of API calls and data:_
 
-BOOKS API calls:
+BOOKS API calls sample:
 * GET http://127.0.0.1:8000/api/v1/books
 * POST http://127.0.0.1:8000/api/v1/books
 * GET http://127.0.0.1:8000/api/v1/books/{uid}
@@ -42,12 +42,12 @@ Example of data used for API call to create book:
         "language": "English"
 }`
 
-USER API calls:
+USER API calls sample:
 * POST http://127.0.0.1:8000/api/v1/auth/signup
 * POST http://127.0.0.1:8000/api/v1/auth/login
 * POST http://127.0.0.1:8000/api/v1/auth/refresh_access_token
 
-Example of data used for API call to create book:
+Example of data used for API call to create user:
 
 `{
     "email": "johndoe@gmail.com",
@@ -57,3 +57,14 @@ Example of data used for API call to create book:
     "password":"12345"
 }`
 
+REVIEW API calls sample:
+* GET http://127.0.0.1:8000/api/v1/reviews
+* GET http://127.0.0.1:8000/api/v1/reviews/860a8e94-deee-4b59-8319-37e2336b8556
+* POST http://127.0.0.1:8000/api/v1/reviews/book/02298daa-d341-4327-88fc-a9dc8f4b8ed1
+
+Example of data used for API call to create review:
+
+`{
+    "rating": 5,
+    "review_text": "it's awesome! recommend to everyone!"
+}`
