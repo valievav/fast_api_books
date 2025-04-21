@@ -1,5 +1,6 @@
 from typing import Any
 
+from fastapi import FastAPI, status
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
@@ -53,7 +54,76 @@ class ReviewNotFoundException(BooklyException):
 
 def create_exception_handler(status_code: int, init_detail: Any):
 
-    async def exception_handler(request: Request, exc: BooklyException):
+    async def exception_handler(request: Request, exc: Exception):
         return JSONResponse(content=init_detail, status_code=status_code)
 
     return exception_handler
+
+
+def register_all_errors(app: FastAPI):
+    app.add_exception_handler(
+        InvalidCredentialsException, create_exception_handler(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            init_detail={'message': 'Invalid email or password'}
+        )
+    )
+    app.add_exception_handler(
+        InvalidTokenException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'This token is invalid or expired'}
+        )
+    )
+    app.add_exception_handler(
+        RevokedTokenException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'This token is invalid or revoked'}
+        )
+    )
+    app.add_exception_handler(
+        AccessTokenRequiredException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'Please provide an access token'}
+        )
+    )
+    app.add_exception_handler(
+        RefreshTokenRequiredException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'Please provide a refresh token'}
+        )
+    )
+    app.add_exception_handler(
+        InsufficientPermissionException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'User has no permission to perform the action'}
+        )
+    )
+    app.add_exception_handler(
+        UserAlreadyExistsException, create_exception_handler(
+            status_code=status.HTTP_409_CONFLICT,
+            init_detail={'message': 'User already exists'}
+        )
+    )
+    app.add_exception_handler(
+        UserNotFoundException, create_exception_handler(
+            status_code=status.HTTP_404_NOT_FOUND,
+            init_detail={'message': 'User not found'}
+        )
+    )
+    app.add_exception_handler(
+        BookNotFoundException, create_exception_handler(
+            status_code=status.HTTP_404_NOT_FOUND,
+            init_detail={'message': 'Book not found'}
+        )
+    )
+    app.add_exception_handler(
+        ReviewNotFoundException, create_exception_handler(
+            status_code=status.HTTP_404_NOT_FOUND,
+            init_detail={'message': 'Review not found'}
+        )
+    )
+
+    @app.exception_handler(500)
+    async def internal_server_error(request, exception):
+        return JSONResponse(content={'message': 'Something went wrong'},
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
