@@ -27,19 +27,20 @@ def register_middleware(app: FastAPI):
 
         return response
 
-    @app.middleware('http')
-    async def authorization(request: Request, call_next):
-        """
-        Check if 'Authorization' is passed in request headers for API calls
-        """
-        if not "Authorization" in request.headers:
-            return JSONResponse(
-                content={'message': 'Not Authenticated',
-                         'resolution': 'Please provide valid credentials'},
-                status_code=status.HTTP_401_UNAUTHORIZED
-            )
-        response = await call_next(request)
-        return response
+    # commenting, since it blocks new user from signing up (they have no auth yet)
+    # @app.middleware('http')
+    # async def authorization(request: Request, call_next):
+    #     """
+    #     Check if 'Authorization' is passed in request headers for API calls
+    #     """
+    #     if not "Authorization" in request.headers:
+    #         return JSONResponse(
+    #             content={'message': 'Not Authenticated',
+    #                      'resolution': 'Please provide valid credentials'},
+    #             status_code=status.HTTP_401_UNAUTHORIZED
+    #         )
+    #     response = await call_next(request)
+    #     return response
 
     app.add_middleware(
         CORSMiddleware,

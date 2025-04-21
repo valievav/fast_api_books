@@ -19,7 +19,7 @@ email_config = ConnectionConfig(
     TEMPLATE_FOLDER=Path(BASE_DIR, "templates"),
 )
 
-email = FastMail(config=email_config)
+mail = FastMail(config=email_config)
 
 def create_message(recipients: list[str], subject: str, body: str):
     message = MessageSchema(
