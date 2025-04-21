@@ -6,15 +6,31 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.db.main import get_session
 from src.db.redis import add_jti_to_blocklist
+from src.email import email, create_message
 from src.errors import UserAlreadyExistsException, InvalidCredentialsException, InvalidTokenException
 from .dependencies import RefreshTokenBearer, AccessTokenBearer, get_current_user, RoleChecker
-from .schemas import User, UserBooks, UserCreateModel, UserLoginModel
+from .schemas import User, UserBooks, UserCreateModel, UserLoginModel, EmailModel
 from .service import UserService
 from .utils import create_access_token, verify_password, REFRESH_TOKEN_EXPIRY
 
 auth_router = APIRouter()
 user_service = UserService()
 role_checker = RoleChecker(['admin', 'user'])
+
+
+@auth_router.post('/send_email')
+async def send_email(emails: EmailModel):
+    emails = emails.addresses
+
+    html = "<h1>Welcome to the BOOKLY</h1>"
+    message = create_message(
+        recipients=emails,
+        subject='Welcome',
+        body=html
+    )
+    await email.send_message(message)
+
+    return {'message': 'Email was sent successfully'}
 
 
 @auth_router.post('/signup',
