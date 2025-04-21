@@ -28,6 +28,10 @@ class RevokedTokenException(BooklyException):
     pass
 
 
+class PasswordsDoNotMatchException(BooklyException):
+    pass
+
+
 class AccessTokenRequiredException(BooklyException):
     pass
 
@@ -88,6 +92,12 @@ def register_all_errors(app: FastAPI):
         RevokedTokenException, create_exception_handler(
             status_code=status.HTTP_403_FORBIDDEN,
             init_detail={'message': 'This token is invalid or revoked'}
+        )
+    )
+    app.add_exception_handler(
+        PasswordsDoNotMatchException, create_exception_handler(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            init_detail={'message': 'Passwords do not match'}
         )
     )
     app.add_exception_handler(

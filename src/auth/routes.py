@@ -9,12 +9,13 @@ from src.db.main import get_session
 from src.db.redis import add_jti_to_blocklist
 from src.email import mail, create_message
 from src.errors import (UserAlreadyExistsException, InvalidCredentialsException,
-                        InvalidTokenException, UserNotFoundException)
+                        InvalidTokenException, UserNotFoundException, PasswordsDoNotMatchException)
 from .dependencies import RefreshTokenBearer, AccessTokenBearer, get_current_user, RoleChecker
-from .schemas import UserBooks, UserCreateModel, UserLoginModel, EmailModel
+from .schemas import (UserBooks, UserCreateModel, UserLoginModel, EmailModel,
+                      PasswordResetModel, PasswordResetConfirmModel)
 from .service import UserService
 from .utils import (create_access_token, verify_password, REFRESH_TOKEN_EXPIRY,
-                    create_url_safe_token, decode_url_safe_token)
+                    create_url_safe_token, decode_url_safe_token, generate_password_hash)
 
 auth_router = APIRouter()
 user_service = UserService()
@@ -59,7 +60,7 @@ async def create_user_account(user_data: UserCreateModel,
     """
     message = create_message(
         recipients=[email],
-        subject='Welcome',
+        subject='Verify your email',
         body=html_message
     )
     await mail.send_message(message)
@@ -84,7 +85,8 @@ async def verify_user_account(token: str, session: AsyncSession = Depends(get_se
 
     user = await user_service.get_user_by_email(user_email, session)
     if not user:
-        raise UserNotFoundException
+        raise UserNotFoundException()
+
     await user_service.update_user(user, {'is_verified': True}, session)
     return JSONResponse(content={'message': 'Account verified successfully!'},
                         status_code=status.HTTP_200_OK)
@@ -170,3 +172,58 @@ async def revoke_token(token_data: dict = Depends(AccessTokenBearer())):
         },
         status_code=status.HTTP_200_OK
     )
+
+
+@auth_router.post('/password_reset')
+async def password_reset_request(email_data: PasswordResetModel):
+    """
+    Reset password for requested email
+    """
+    email = email_data.email
+
+    # send email with link to reset password
+    token = create_url_safe_token({'email': email})
+    link = f'http://{Config.DOMAIN}/api/v1/auth/confirm_password_reset/{token}'
+    html_message = f"""
+    <h1> Reset password for your account </h1>
+    <p> Please click this <a href="{link}">link</a> to reset password </p>
+    """
+    message = create_message(
+        recipients=[email],
+        subject='Reset password',
+        body=html_message
+    )
+    await mail.send_message(message)
+
+    return JSONResponse(
+        content={'message': 'Password reset link sent. Please check your email to reset the password.'},
+        status_code=status.HTTP_200_OK
+    )
+
+
+@auth_router.get('/confirm_password_reset/{token}')
+async def confirm_password_reset(token: str, password_data: PasswordResetConfirmModel,
+                                 session: AsyncSession = Depends(get_session)):
+    """
+    Confirm password reset to new password value.
+    For this user needs to send password reset request -> get link to their email -> follow the link to reset the password.
+    """
+    new_password = password_data.new_password
+    confirm_password = password_data.confirm_new_password
+    if new_password != confirm_password:
+        raise PasswordsDoNotMatchException()
+
+    token_data = decode_url_safe_token(token)
+    user_email = token_data.get('email')
+    if not user_email:
+        return JSONResponse(content={'message': 'Error occurred during password reset'},
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    user = await user_service.get_user_by_email(user_email, session)
+    if not user:
+        raise UserNotFoundException()
+
+    new_hash = generate_password_hash(new_password)
+    await user_service.update_user(user, {'password_hash': new_hash}, session)
+    return JSONResponse(content={'message': 'Password updated successfully!'},
+                        status_code=status.HTTP_200_OK)
