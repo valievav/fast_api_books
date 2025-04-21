@@ -8,6 +8,7 @@ What's used for this project:
 5. **Alembic** - for db migrations
 6. **PostgreSQL** - db to persist data
 7. **Redis** - caching db, to minimize number of main db calls
+8. **Celery & Flower** - for background tasks - Flower UI http://localhost:5555/
 
 ___
 
@@ -16,14 +17,24 @@ To run project locally:
 2. **Setup .env file** - update `.env` file with your own paths and parameters
 3. **Apply migration files to db** - run `alembic upgrade head`
 4. **Run server** - run `fastapi dev src/`
-5. **Start redis container** - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
+5. **Start redis container** (to check jti token blocklist and for celery tasks) - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
 6. **Use API** - make API call to any endpoint via Postman OR Swagger UI
-
+7. **Start celery worker** (for background tasks like send_email_task) - start worker `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo` (`--pool=solo` for Windows to avoid access denied error), 
+start UI `celery -A src.celery_tasks.celery_app flower` and visit http://localhost:5555/ to see workers, tasks etc.
 
 To create and apply migrations:
 1. **Create migration** file in project + `alembic_version` table in db - run `alembic revision --autogenerate -m "init"`
 2. **Apply migration** file to the db - run `alembic upgrade head`
 
+To run task via celery to check that it works:
+1. Start celery worker - run `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo`
+2. Open Python console and run there
+```
+from src.celery_tasks import send_email_task
+emails = ['email@gmail.com']
+task_1 = send_email_task.delay(emails, 'Test Celery', '<h1> CELERY test :) </h1>')
+task_1.status
+```
 ___
 _Example of API calls and data:_
 
@@ -68,3 +79,15 @@ Example of data used for API call to create review:
     "rating": 5,
     "review_text": "it's awesome! recommend to everyone!"
 }`
+
+---
+
+Postman API calls:
+![Postman API calls](readme_img/postman_api_calls.png)
+
+Swagger API calls:
+![Swagger_1](readme_img/swagger_1.png)
+![Swagger_2](readme_img/swagger_2.png)
+
+Celery tasks (Flower UI):
+![Celery_Flower](readme_img/celery_flower.png)
