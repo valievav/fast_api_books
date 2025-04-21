@@ -8,7 +8,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.main import get_session
 from src.db.models import User
 from src.db.redis import token_in_blocklist
-from src.errors import (AccessTokenRequiredException, InvalidTokenException, RevokedTokenException,
+from src.errors import (AccessTokenRequiredException, AccountNotVerifiedException,
+                        InvalidTokenException, RevokedTokenException,
                         RefreshTokenRequiredException, InsufficientPermissionException)
 from .service import UserService
 from .utils import decode_access_token
@@ -67,6 +68,10 @@ class RoleChecker:
         self.allowed_roles = allowed_roles or ['admin',]
 
     def __call__(self, current_user: User = Depends(get_current_user)) -> bool:
+        if not current_user.is_verified:
+            raise AccountNotVerifiedException()
+
         if current_user.role not in self.allowed_roles:
             raise InsufficientPermissionException()
+
         return True

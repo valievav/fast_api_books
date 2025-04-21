@@ -16,6 +16,10 @@ class InvalidCredentialsException(BooklyException):
     pass
 
 
+class AccountNotVerifiedException(BooklyException):
+    pass
+
+
 class InvalidTokenException(BooklyException):
     pass
 
@@ -65,6 +69,13 @@ def register_all_errors(app: FastAPI):
         InvalidCredentialsException, create_exception_handler(
             status_code=status.HTTP_401_UNAUTHORIZED,
             init_detail={'message': 'Invalid email or password'}
+        )
+    )
+    app.add_exception_handler(
+        AccountNotVerifiedException, create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            init_detail={'message': 'Account is not verified yet',
+                         'resolution': 'Please check your email for verification link'}
         )
     )
     app.add_exception_handler(
