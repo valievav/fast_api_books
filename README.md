@@ -14,7 +14,8 @@ ___
 
 To run project locally: 
 1. **Setup db** - have PostgreSQL installed on your machine -> create new db for the project via pgAdmin or other way
-2. **Setup .env file** - update `.env` file with your own paths and parameters
+2. **Setup .env file** - update `.env` file with your own paths and parameters like JWT_SECRET_KEY (`import secrets; secrets.token_hex(16)`), 
+MAIL_USERNAME & MAIL_PASSWORD (add gmail app password https://support.google.com/mail/answer/185833?hl=en)
 3. **Apply migration files to db** - run `alembic upgrade head`
 4. **Run server** - run `fastapi dev src/` (for prod `fastapi run src/`)
 5. **Start redis container** - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
