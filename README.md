@@ -7,8 +7,8 @@ What's used for this project:
 4. **Pydantic** - data validation for API calls (input & output)
 5. **Alembic** - for db migrations
 6. **PostgreSQL** - db to persist data
-7. **Redis** - caching db, to minimize number of main db calls
-8. **Celery & Flower** - for background tasks - Flower UI http://localhost:5555/
+7. **Redis** - caching in-memory db, to check jti token blocklist and as a celery tasks broker (queues) and background (task results)
+8. **Celery & Flower** - for background tasks like send_email_task - Flower UI http://localhost:5555/
 
 ___
 
@@ -16,10 +16,10 @@ To run project locally:
 1. **Setup db** - have PostgreSQL installed on your machine -> create new db for the project via pgAdmin or other way
 2. **Setup .env file** - update `.env` file with your own paths and parameters
 3. **Apply migration files to db** - run `alembic upgrade head`
-4. **Run server** - run `fastapi dev src/`
-5. **Start redis container** (to check jti token blocklist and for celery tasks) - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
+4. **Run server** - run `fastapi dev src/` (for prod `fastapi run src/`)
+5. **Start redis container** - run `docker run -d -p 6379:6379 --name redis redis`, verify it's up and running via Docker Desktop or run `docker ps`
 6. **Use API** - make API call to any endpoint via Postman OR Swagger UI
-7. **Start celery worker** (for background tasks like send_email_task) - start worker `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo` (`--pool=solo` for Windows to avoid access denied error), 
+7. **Start celery worker** - start worker `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo` (`--pool=solo` for Windows to avoid access denied error), 
 start UI `celery -A src.celery_tasks.celery_app flower` and visit http://localhost:5555/ to see workers, tasks etc.
 
 To create and apply migrations:
@@ -97,3 +97,5 @@ Swagger API calls:
 
 Celery tasks (Flower UI):
 ![Celery_Flower](readme_img/celery_flower.png)
+
+Uw4FPr-dD7Q&list=PLEt8Tae2spYnHy378vMlPH--87cfeh33P
