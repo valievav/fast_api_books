@@ -2,7 +2,7 @@
 
 What's used for this project:
 1. **FastAPI** - to create API endpoints
-2. **Swagger** - API documentation http://127.0.0.1:8000/docs
+2. **Swagger** - API documentation http://127.0.0.1:8000/docs & OpenAPI specification JSON format http://127.0.0.1:8000/openapi.json
 3. **ReDoc** - alternative API documentation http://127.0.0.1:8000/redoc
 4. **Pydantic** - data validation for API calls (input & output)
 5. **Alembic** - for db migrations
@@ -26,15 +26,21 @@ To create and apply migrations:
 1. **Create migration** file in project + `alembic_version` table in db - run `alembic revision --autogenerate -m "init"`
 2. **Apply migration** file to the db - run `alembic upgrade head`
 
-To run task via celery to check that it works:
-1. Start celery worker - run `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo`
-2. Open Python console and run there
+To run task via Celery to check that it works:
+1. **Start celery worker** - run `celery -A src.celery_tasks.celery_app worker --loglevel=info --pool=solo`
+2. **Run code in Python console**
 ```
 from src.celery_tasks import send_email_task
 emails = ['email@gmail.com']
 task_1 = send_email_task.delay(emails, 'Test Celery', '<h1> CELERY test :) </h1>')
 task_1.status
 ```
+
+To run schemathesis tests based on openapi json documentation run `st run http://localhost:8000/openapi.json --experimental=openapi-3.1`
+Note: server needs to run, since error logs will be there.
+
+To force stop project if normal method doesn't work - kill all python tasks `taskkill /F /IM python.exe`
+
 ___
 _Example of API calls and data:_
 

@@ -1,5 +1,5 @@
 from celery import Celery
-from src.email import mail, create_message
+from src.mail import mail, create_message
 from typing import List
 from asgiref.sync import async_to_sync
 

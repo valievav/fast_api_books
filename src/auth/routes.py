@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, status, BackgroundTasks
+from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -37,7 +37,6 @@ async def send_email(emails: EmailModel):
 @auth_router.post('/signup',
                   status_code=status.HTTP_201_CREATED)
 async def create_user_account(user_data: UserCreateModel,
-                              bg_tasks: BackgroundTasks,
                               session: AsyncSession = Depends(get_session)):
     """
     Create new user based on provided data
